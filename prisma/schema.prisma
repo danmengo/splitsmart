@@ -5,10 +5,93 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  name          String?
+  avatarUrl     String?
+  createdAt     DateTime  @default(now())
+
+  groupMembers  GroupMember[]
+  paidExpenses  Expense[]       @relation("PaidBy")
+  expenseSplits ExpenseSplit[]
+  notifications Notification[]
+
+  @@map("users")
+}
+
+model Group {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  createdAt   DateTime  @default(now())
+  createdBy   String
+
+  members     GroupMember[]
+  expenses    Expense[]
+
+  @@map("groups")
+}
+
+model GroupMember {
+  id       String   @id @default(uuid())
+  groupId  String
+  userId   String
+  role     String   @default("member") // "admin" or "member"
+  joinedAt DateTime @default(now())
+
+  group    Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId]) // a user can only be in a group once
+  @@map("group_members")
+}
+
+model Expense {
+  id          String    @id @default(uuid())
+  groupId     String
+  paidById    String
+  title       String
+  amount      Float
+  splitType   String    @default("equal") // "equal" or "percentage"
+  createdAt   DateTime  @default(now())
+
+  group       Group         @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  paidBy      User          @relation("PaidBy", fields: [paidById], references: [id])
+  splits      ExpenseSplit[]
+
+  @@map("expenses")
+}
+
+model ExpenseSplit {
+  id         String   @id @default(uuid())
+  expenseId  String
+  userId     String
+  amount     Float    // the actual dollar amount this user owes
+  percentage Float?   // only used if splitType is "percentage"
+  paid       Boolean  @default(false)
+
+  expense    Expense  @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("expense_splits")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
 }
