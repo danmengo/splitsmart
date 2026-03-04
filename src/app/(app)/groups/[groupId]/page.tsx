@@ -7,6 +7,10 @@ import { Badge } from '@/components/ui/badge'
 import InviteMemberButton from '@/components/groups/InviteMemberButton'
 import AddExpenseButton from '@/components/expenses/AddExpenseButton'
 import ExpenseActions from '@/components/expenses/ExpenseActions'
+import MarkSplitPaid from '@/components/expenses/MarkSplitPaid'
+import SettleUpButton from '@/components/groups/SettleUpButton'
+
+export const dynamic = 'force-dynamic'
 
 export default async function GroupDetailPage({
   params
@@ -41,21 +45,21 @@ export default async function GroupDetailPage({
   const currentMember = group.members.find(m => m.userId === user.id)
   const isAdmin = currentMember?.role === 'admin'
 
-  // Calculate what each person owes / is owed
+  // Calculate balances per member
   const balances = group.members.map(member => {
-    const totalPaid = group.expenses
-      .filter(e => e.paidById === member.userId)
-      .reduce((sum, e) => sum + e.amount, 0)
-
-    const totalOwed = group.expenses
-      .flatMap(e => e.splits)
-      .filter(s => s.userId === member.userId)
-      .reduce((sum, s) => sum + s.amount, 0)
-
-    return {
-      user: member.user,
-      balance: totalPaid - totalOwed // positive = owed money, negative = owes money
+    let balance = 0
+    for (const expense of group.expenses) {
+      for (const split of expense.splits) {
+        if (split.paid) continue // skip settled splits
+        if (expense.paidById === member.userId && split.userId !== member.userId) {
+          balance += split.amount // others owe this member
+        }
+        if (split.userId === member.userId && expense.paidById !== member.userId) {
+          balance -= split.amount // this member owes others
+        }
+      }
     }
+    return { user: member.user, userId: member.userId, balance }
   })
 
   return (
@@ -70,6 +74,11 @@ export default async function GroupDetailPage({
         </div>
         <div className="flex items-center gap-2">
           {isAdmin && <InviteMemberButton groupId={group.id} />}
+          <SettleUpButton
+            groupId={group.id}
+            members={balances}
+            currentUserId={user.id}
+          />
           <AddExpenseButton
             groupId={group.id}
             members={group.members.map(m => ({ userId: m.userId, user: m.user }))}
@@ -78,7 +87,7 @@ export default async function GroupDetailPage({
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left column - Members + Balances */}
+        {/* Left column */}
         <div className="space-y-4">
           <Card>
             <CardHeader>
@@ -115,8 +124,13 @@ export default async function GroupDetailPage({
                   <span className="text-sm text-gray-700 truncate">
                     {memberUser.name ?? memberUser.email}
                   </span>
-                  <span className={`text-sm font-semibold ${balance > 0 ? 'text-green-600' : balance < 0 ? 'text-red-500' : 'text-gray-400'}`}>
-                    {balance > 0 ? `+$${balance.toFixed(2)}` : balance < 0 ? `-$${Math.abs(balance).toFixed(2)}` : 'settled'}
+                  <span className={`text-sm font-semibold ${balance > 0 ? 'text-green-600' : balance < 0 ? 'text-red-500' : 'text-gray-400'
+                    }`}>
+                    {balance > 0
+                      ? `+$${balance.toFixed(2)}`
+                      : balance < 0
+                        ? `-$${Math.abs(balance).toFixed(2)}`
+                        : 'settled'}
                   </span>
                 </div>
               ))}
@@ -142,27 +156,56 @@ export default async function GroupDetailPage({
                     const myShare = expense.splits.find(s => s.userId === user.id)
                     const isPayer = expense.paidById === user.id
                     return (
-                      <div key={expense.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">{expense.title}</p>
-                          <p className="text-xs text-gray-500 mt-0.5">
-                            Paid by {expense.paidBy.name ?? expense.paidBy.email} · {expense.splitType === 'equal' ? 'Split equally' : 'Split by %'}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div className="text-right">
-                            <p className="text-sm font-semibold text-gray-900">${expense.amount.toFixed(2)}</p>
-                            {myShare && (
-                              <p className="text-xs text-gray-500 mt-0.5">Your share: ${myShare.amount.toFixed(2)}</p>
+                      <div key={expense.id} className="p-3 bg-gray-50 rounded-lg space-y-2">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">{expense.title}</p>
+                            <p className="text-xs text-gray-500 mt-0.5">
+                              Paid by {expense.paidBy.name ?? expense.paidBy.email} · {expense.splitType === 'equal' ? 'Split equally' : 'Split by %'}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <div className="text-right">
+                              <p className="text-sm font-semibold text-gray-900">${expense.amount.toFixed(2)}</p>
+                              {myShare && (
+                                <p className="text-xs text-gray-500">Your share: ${myShare.amount.toFixed(2)}</p>
+                              )}
+                            </div>
+                            {isPayer && (
+                              <ExpenseActions
+                                expense={expense}
+                                members={group.members.map(m => ({ userId: m.userId, user: m.user }))}
+                                currentUserId={user.id}
+                              />
                             )}
                           </div>
-                          {isPayer && (
-                            <ExpenseActions
-                              expense={expense}
-                              members={group.members.map(m => ({ userId: m.userId, user: m.user }))}
-                              currentUserId={user.id}
-                            />
-                          )}
+                        </div>
+
+                        {/* Splits breakdown */}
+                        <div className="border-t border-gray-200 pt-2 space-y-1">
+                          {expense.splits.map(split => (
+                            <div key={split.id} className="flex items-center justify-between">
+                              <span className="text-xs text-gray-500">
+                                {split.user.name ?? split.user.email}
+                              </span>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-gray-600">${split.amount.toFixed(2)}</span>
+                                {split.userId === user.id && !isPayer && (
+                                  <MarkSplitPaid
+                                    expenseId={expense.id}
+                                    userId={user.id}
+                                    paid={split.paid}
+                                  />
+                                )}
+                                {split.userId !== user.id && isPayer && (
+                                  <span className={`text-xs px-2 py-0.5 rounded-full ${split.paid ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
+                                    }`}>
+                                    {split.paid ? '✓ Paid' : 'Unpaid'}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          ))}
                         </div>
                       </div>
                     )
