@@ -157,7 +157,15 @@ export default async function DashboardPage() {
               </div>
             ) : (
               <div className="space-y-3">
-                {recentExpenses.map(expense => {
+                {recentExpenses.map((expense: {
+                  id: string
+                  title: string
+                  amount: number
+                  createdAt: Date
+                  splits: { amount: number }[]
+                  paidBy: { name: string | null; email: string }
+                  group: { name: string }
+                }) => {
                   const myShare = expense.splits[0]
                   return (
                     <div key={expense.id} className="flex items-center justify-between py-1">
