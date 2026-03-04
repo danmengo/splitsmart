@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import InviteMemberButton from '@/components/groups/InviteMemberButton'
 import AddExpenseButton from '@/components/expenses/AddExpenseButton'
+import ExpenseActions from '@/components/expenses/ExpenseActions'
 
 export default async function GroupDetailPage({
   params
@@ -139,6 +140,7 @@ export default async function GroupDetailPage({
                 <div className="space-y-3">
                   {group.expenses.map(expense => {
                     const myShare = expense.splits.find(s => s.userId === user.id)
+                    const isPayer = expense.paidById === user.id
                     return (
                       <div key={expense.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                         <div>
@@ -147,12 +149,19 @@ export default async function GroupDetailPage({
                             Paid by {expense.paidBy.name ?? expense.paidBy.email} · {expense.splitType === 'equal' ? 'Split equally' : 'Split by %'}
                           </p>
                         </div>
-                        <div className="text-right">
-                          <p className="text-sm font-semibold text-gray-900">${expense.amount.toFixed(2)}</p>
-                          {myShare && (
-                            <p className="text-xs text-gray-500 mt-0.5">
-                              Your share: ${myShare.amount.toFixed(2)}
-                            </p>
+                        <div className="flex items-center gap-3">
+                          <div className="text-right">
+                            <p className="text-sm font-semibold text-gray-900">${expense.amount.toFixed(2)}</p>
+                            {myShare && (
+                              <p className="text-xs text-gray-500 mt-0.5">Your share: ${myShare.amount.toFixed(2)}</p>
+                            )}
+                          </div>
+                          {isPayer && (
+                            <ExpenseActions
+                              expense={expense}
+                              members={group.members.map(m => ({ userId: m.userId, user: m.user }))}
+                              currentUserId={user.id}
+                            />
                           )}
                         </div>
                       </div>
