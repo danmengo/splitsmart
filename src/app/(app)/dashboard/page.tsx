@@ -37,36 +37,44 @@ export default async function DashboardPage() {
   ])
 
   // Calculate balances
+  // Calculate balances
   let totalOwedToMe = 0
   let totalIOwe = 0
   const spendingByGroup: { name: string; total: number }[] = []
 
   for (const group of groups) {
-    const myExpenseSplits = group.expenses
-      .flatMap((e) => e.splits)
-      .filter((s) => s.userId === user.id)
+    for (const expense of group.expenses) {
+      for (const split of expense.splits) {
+        if (split.userId === user.id) {
+          // This is my share of an expense
+          if (expense.paidById !== user.id) {
+            // Someone else paid — I owe them
+            totalIOwe += split.amount
+          }
+        } else {
+          // This is someone else's share
+          if (expense.paidById === user.id) {
+            // I paid — they owe me
+            totalOwedToMe += split.amount
+          }
+        }
+      }
+    }
 
-    const totalIOweInGroup = myExpenseSplits
-      .filter((s) => {
-        const expense = group.expenses.find((e) => e.id === s.expenseId)
-        return expense?.paidById !== user.id
-      })
-      .reduce((sum, s) => sum + s.amount, 0)
+    // Calculate my total spend in this group for the chart
+    let myGroupSpend = 0
+    for (const expense of group.expenses) {
+      for (const split of expense.splits) {
+        if (split.userId === user.id) {
+          myGroupSpend += split.amount
+        }
+      }
+    }
 
-    const totalOwedToMeInGroup = group.expenses
-      .filter((e) => e.paidById === user.id)
-      .flatMap((e) => e.splits)
-      .filter((s) => s.userId !== user.id)
-      .reduce((sum, s) => sum + s.amount, 0)
-
-    totalIOwe += totalIOweInGroup
-    totalOwedToMe += totalOwedToMeInGroup
-
-    const totalSpend = myExpenseSplits.reduce((sum, s) => sum + s.amount, 0)
-    if (totalSpend > 0) {
+    if (myGroupSpend > 0) {
       spendingByGroup.push({
         name: group.name,
-        total: parseFloat(totalSpend.toFixed(2))
+        total: parseFloat(myGroupSpend.toFixed(2))
       })
     }
   }
