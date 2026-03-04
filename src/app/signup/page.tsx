@@ -18,17 +18,16 @@ export default function SignUpPage() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
-  const supabase = createClient()
 
   async function handleSignUp() {
     setLoading(true)
     setError(null)
-
+    const supabase = createClient()
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: { full_name: name }  // stores name in user metadata
+        data: { full_name: name }
       }
     })
 
