@@ -21,7 +21,7 @@ export default function SpendingChart({ data = [] }: Props) {
         <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
         <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#6b7280' }} axisLine={false} tickLine={false} />
         <YAxis tick={{ fontSize: 12, fill: '#6b7280' }} axisLine={false} tickLine={false} tickFormatter={v => `$${v}`} />
-        <Tooltip formatter={(value: number) => [`$${value.toFixed(2)}`, 'Your share']} contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb' }} />
+        <Tooltip formatter={(value) => `$${Number(value).toFixed(2)}`} contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb' }} />
         <Bar dataKey="total" fill="#22c55e" radius={[4, 4, 0, 0]} />
       </BarChart>
     </ResponsiveContainer>
