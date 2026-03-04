@@ -66,8 +66,8 @@ export default function SettleUpButton({
                                 </p>
                                 <p className={`text-xs mt-0.5 ${member.balance > 0 ? 'text-green-600' : 'text-red-500'}`}>
                                     {member.balance > 0
-                                        ? `Owes you $${member.balance.toFixed(2)}`
-                                        : `You owe $${Math.abs(member.balance).toFixed(2)}`}
+                                        ? `You owe $${member.balance.toFixed(2)}`
+                                        : `Owes you $${Math.abs(member.balance).toFixed(2)}`}
                                 </p>
                             </div>
                             <Button
