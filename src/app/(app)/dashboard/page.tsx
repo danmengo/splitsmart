@@ -6,6 +6,8 @@ import { Users, Receipt, TrendingUp, TrendingDown } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import SpendingChart from '@/components/dashboard/SpendingChart'
 
+export const dynamic = 'force-dynamic'
+
 export default async function DashboardPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

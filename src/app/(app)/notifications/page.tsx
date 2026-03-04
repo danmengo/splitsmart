@@ -6,6 +6,8 @@ import { Bell } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import MarkReadButton from '@/components/notifications/MarkReadButton'
 
+export const dynamic = 'force-dynamic'
+
 export default async function NotificationsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

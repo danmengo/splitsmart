@@ -6,6 +6,8 @@ import { Users } from 'lucide-react'
 import Link from 'next/link'
 import CreateGroupButton from '@/components/groups/CreateGroupButton'
 
+export const dynamic = 'force-dynamic'
+
 export default async function GroupsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
