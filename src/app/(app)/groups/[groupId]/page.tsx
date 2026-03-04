@@ -9,6 +9,8 @@ import AddExpenseButton from '@/components/expenses/AddExpenseButton'
 import ExpenseActions from '@/components/expenses/ExpenseActions'
 import MarkSplitPaid from '@/components/expenses/MarkSplitPaid'
 import SettleUpButton from '@/components/groups/SettleUpButton'
+import GroupActions from '@/components/groups/GroupActions'
+import RemoveMemberButton from '@/components/groups/RemoveMemberButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -83,6 +85,7 @@ export default async function GroupDetailPage({
             groupId={group.id}
             members={group.members.map(m => ({ userId: m.userId, user: m.user }))}
           />
+          <GroupActions groupId={group.id} isAdmin={isAdmin ?? false} />
         </div>
       </div>
 
@@ -109,6 +112,13 @@ export default async function GroupDetailPage({
                       <Badge variant="secondary" className="text-xs">Admin</Badge>
                     )}
                   </div>
+                  {isAdmin && member.userId !== user.id && (
+                    <RemoveMemberButton
+                      groupId={group.id}
+                      userId={member.userId}
+                      userName={member.user.name ?? member.user.email}
+                    />
+                  )}
                 </div>
               ))}
             </CardContent>
