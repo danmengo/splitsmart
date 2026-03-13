@@ -6,7 +6,6 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
@@ -18,7 +17,8 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
 
-  async function handleLogin() {
+  async function handleLogin(e: React.FormEvent) {
+    e.preventDefault()
     setLoading(true)
     setError(null)
     const supabase = createClient()
@@ -45,46 +45,74 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-2xl">Welcome back</CardTitle>
-          <CardDescription>Sign in to your SplitSmart account</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
-          {error && <p className="text-sm text-red-500">{error}</p>}
-        </CardContent>
-        <CardFooter className="flex flex-col gap-3">
-          <Button className="w-full" onClick={handleLogin} disabled={loading}>
-            {loading ? 'Signing in...' : 'Sign in'}
-          </Button>
+    <div className="min-h-screen flex">
+      {/* Left panel — branding */}
+      <div className="hidden lg:flex lg:w-1/2 bg-green-600 text-white flex-col justify-between p-12">
+        <div>
+          <Link href="/" className="text-2xl font-bold">SplitSmart</Link>
+        </div>
+        <div>
+          <h2 className="text-4xl font-bold leading-tight mb-4">
+            Split expenses,<br />not friendships.
+          </h2>
+          <p className="text-green-100 text-lg leading-relaxed max-w-md">
+            Track shared costs with your group, see who owes what, and settle up — all in one place.
+          </p>
+        </div>
+        <p className="text-green-200 text-sm">Free to use. No credit card required.</p>
+      </div>
 
-          <div className="relative w-full">
+      {/* Right panel — form */}
+      <div className="flex-1 flex items-center justify-center p-8 bg-gray-50">
+        <div className="w-full max-w-sm">
+          <div className="lg:hidden mb-8">
+            <Link href="/" className="text-xl font-bold text-green-600">SplitSmart</Link>
+          </div>
+
+          <h1 className="text-2xl font-bold text-gray-900">Welcome back</h1>
+          <p className="text-gray-500 mt-1 mb-8">Sign in to your account</p>
+
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+
+            {error && (
+              <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                {error}
+              </div>
+            )}
+
+            <Button type="submit" className="w-full bg-green-600 hover:bg-green-700" disabled={loading}>
+              {loading ? 'Signing in...' : 'Sign in'}
+            </Button>
+          </form>
+
+          <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t border-gray-200" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-2 text-gray-400">or</span>
+              <span className="bg-gray-50 px-2 text-gray-400">or</span>
             </div>
           </div>
 
@@ -102,12 +130,12 @@ export default function LoginPage() {
             Continue with Google
           </Button>
 
-          <p className="text-sm text-gray-500">
-            Don't have an account?{' '}
-            <Link href="/signup" className="text-blue-600 hover:underline">Sign up</Link>
+          <p className="text-sm text-gray-500 mt-6 text-center">
+            Don&apos;t have an account?{' '}
+            <Link href="/signup" className="text-green-600 font-medium hover:underline">Sign up</Link>
           </p>
-        </CardFooter>
-      </Card>
+        </div>
+      </div>
     </div>
   )
 }
