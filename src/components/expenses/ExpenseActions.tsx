@@ -35,10 +35,15 @@ export default function ExpenseActions({
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [title, setTitle] = useState(expense.title)
   const [amount, setAmount] = useState(expense.amount.toString())
-  const [splitType, setSplitType] = useState<'equal' | 'percentage'>(expense.splitType as 'equal' | 'percentage')
+  const [splitType, setSplitType] = useState<'equal' | 'percentage' | 'amount'>(expense.splitType as 'equal' | 'percentage' | 'amount')
   const [percentages, setPercentages] = useState<Record<string, string>>(
     Object.fromEntries(
       expense.splits.map(s => [s.userId, s.percentage?.toString() ?? ''])
+    )
+  )
+  const [amounts, setAmounts] = useState<Record<string, string>>(
+    Object.fromEntries(
+      expense.splits.map(s => [s.userId, expense.splitType === 'amount' ? s.amount.toFixed(2) : ''])
     )
   )
   const [loading, setLoading] = useState(false)
@@ -58,6 +63,9 @@ export default function ExpenseActions({
   const totalPercentage = Object.values(percentages)
     .reduce((sum, p) => sum + (parseFloat(p) || 0), 0)
 
+  const totalAmounts = Object.values(amounts)
+    .reduce((sum, a) => sum + (parseFloat(a) || 0), 0)
+
   const equalAmount = amount && members.length
     ? (parseFloat(amount) / members.length).toFixed(2)
     : '0.00'
@@ -70,13 +78,20 @@ export default function ExpenseActions({
       return
     }
 
+    if (splitType === 'amount' && Math.abs(totalAmounts - parseFloat(amount)) > 0.01) {
+      setError(`Amounts must add up to $${parseFloat(amount).toFixed(2)} (currently $${totalAmounts.toFixed(2)})`)
+      return
+    }
+
     setLoading(true)
     const splits = members.map(member => {
       if (splitType === 'equal') {
         return { userId: member.userId, amount: parseFloat(amount) / members.length }
-      } else {
+      } else if (splitType === 'percentage') {
         const pct = parseFloat(percentages[member.userId]) || 0
         return { userId: member.userId, amount: (parseFloat(amount) * pct) / 100, percentage: pct }
+      } else {
+        return { userId: member.userId, amount: parseFloat(amounts[member.userId]) || 0 }
       }
     })
 
@@ -140,10 +155,11 @@ export default function ExpenseActions({
             </div>
             <div className="space-y-2">
               <Label>How to split?</Label>
-              <Tabs value={splitType} onValueChange={v => setSplitType(v as 'equal' | 'percentage')}>
+              <Tabs value={splitType} onValueChange={v => setSplitType(v as 'equal' | 'percentage' | 'amount')}>
                 <TabsList className="w-full">
-                  <TabsTrigger value="equal" className="flex-1">Split Equally</TabsTrigger>
-                  <TabsTrigger value="percentage" className="flex-1">By Percentage</TabsTrigger>
+                  <TabsTrigger value="equal" className="flex-1">Equally</TabsTrigger>
+                  <TabsTrigger value="percentage" className="flex-1">By %</TabsTrigger>
+                  <TabsTrigger value="amount" className="flex-1">By $</TabsTrigger>
                 </TabsList>
                 <TabsContent value="equal" className="mt-3">
                   <div className="space-y-2">
@@ -176,6 +192,29 @@ export default function ExpenseActions({
                     ))}
                     <div className={`text-xs mt-1 text-right ${Math.abs(totalPercentage - 100) < 0.01 ? 'text-green-500' : 'text-red-500'}`}>
                       Total: {totalPercentage.toFixed(1)}% {Math.abs(totalPercentage - 100) < 0.01 ? '✓' : '(must equal 100%)'}
+                    </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="amount" className="mt-3">
+                  <div className="space-y-2">
+                    {members.map(member => (
+                      <div key={member.userId} className="flex items-center gap-3">
+                        <span className="text-sm text-gray-700 flex-1">{member.user.name ?? member.user.email}</span>
+                        <div className="flex items-center gap-1 w-28">
+                          <span className="text-sm text-gray-500">$</span>
+                          <Input
+                            type="number"
+                            placeholder="0.00"
+                            value={amounts[member.userId]}
+                            onChange={e => setAmounts(prev => ({ ...prev, [member.userId]: e.target.value }))}
+                            className="text-right"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                    <div className={`text-xs mt-1 text-right ${amount && Math.abs(totalAmounts - parseFloat(amount)) < 0.01 ? 'text-green-500' : 'text-red-500'}`}>
+                      Total: ${totalAmounts.toFixed(2)} {amount && Math.abs(totalAmounts - parseFloat(amount)) < 0.01 ? '✓' : `(must equal $${amount ? parseFloat(amount).toFixed(2) : '0.00'})`}
                     </div>
                   </div>
                 </TabsContent>
