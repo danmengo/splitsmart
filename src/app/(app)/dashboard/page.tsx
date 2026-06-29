@@ -47,16 +47,13 @@ export default async function DashboardPage() {
   for (const group of groups) {
     for (const expense of group.expenses) {
       for (const split of expense.splits) {
+        if (split.paid) continue
         if (split.userId === user.id) {
-          // This is my share of an expense
           if (expense.paidById !== user.id) {
-            // Someone else paid — I owe them
             totalIOwe += split.amount
           }
         } else {
-          // This is someone else's share
           if (expense.paidById === user.id) {
-            // I paid — they owe me
             totalOwedToMe += split.amount
           }
         }
