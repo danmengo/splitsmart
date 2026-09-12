@@ -15,7 +15,17 @@ export async function POST(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { groupId } = await params;
-  const { withUserId } = await request.json();
+  const body = await request.json().catch(() => null);
+  const withUserId = body?.withUserId;
+  if (typeof withUserId !== 'string' || !withUserId || withUserId === user.id) {
+    return NextResponse.json({ error: 'Choose another group member' }, { status: 400 });
+  }
+  const members = await prisma.groupMember.findMany({
+    where: { groupId, userId: { in: [user.id, withUserId] } },
+  });
+  if (members.length !== 2) {
+    return NextResponse.json({ error: 'Both people must belong to this group' }, { status: 403 });
+  }
 
   // Mark all unpaid splits as paid between these two users in this group
   await prisma.$transaction(async (tx) => {

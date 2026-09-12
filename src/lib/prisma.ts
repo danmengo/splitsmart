@@ -7,7 +7,7 @@ declare global {
 
 function createPrismaClient() {
   const adapter = new PrismaNeon({ connectionString: process.env.DATABASE_URL! })
-  return new PrismaClient({ adapter } as any)
+  return new PrismaClient({ adapter })
 }
 
 export const prisma = globalThis.prisma ?? createPrismaClient()

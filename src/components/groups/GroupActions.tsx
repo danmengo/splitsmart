@@ -78,7 +78,7 @@ export default function GroupActions({
                         </p>
                     ) : (
                         <p className="text-sm text-gray-600">
-                            Are you sure you want to leave this group? You'll lose access to all expenses and will need to be re-invited to rejoin.
+                            Are you sure you want to leave this group? You&apos;ll lose access to all expenses and will need to be re-invited to rejoin.
                         </p>
                     )}
                     {error && <p className="text-sm text-red-500">{error}</p>}

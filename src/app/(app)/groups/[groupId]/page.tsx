@@ -171,7 +171,7 @@ export default async function GroupDetailPage({
                           <div>
                             <p className="text-sm font-medium text-gray-900">{expense.title}</p>
                             <p className="text-xs text-gray-500 mt-0.5">
-                              Paid by {expense.paidBy.name ?? expense.paidBy.email} · {expense.splitType === 'equal' ? 'Split equally' : 'Split by %'}
+                              Paid by {expense.paidBy.name ?? expense.paidBy.email} · {expense.splitType === 'equal' ? 'Split equally' : expense.splitType === 'amount' ? 'Split by $' : 'Split by %'}
                             </p>
                           </div>
                           <div className="flex items-center gap-3">

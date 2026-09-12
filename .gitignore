@@ -42,5 +42,9 @@ next-env.d.ts
 
 /src/generated/prisma
 
+# A separate nested checkout is not part of this application.
+/splitsmart/
+!.env.example
+
 CONTEXT.md
 CLAUDE.md

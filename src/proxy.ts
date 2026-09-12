@@ -27,16 +27,20 @@ export async function proxy(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  const isPublicRoute = 
-    request.nextUrl.pathname.startsWith('/login') || 
-    request.nextUrl.pathname.startsWith('/signup') ||
-    request.nextUrl.pathname.startsWith('/auth/callback') ||
-    request.nextUrl.pathname.startsWith('/api/auth')
+  const pathname = request.nextUrl.pathname
+  const isPublicRoute = ['/', '/login', '/signup', '/auth/callback', '/api/auth/signout'].includes(pathname)
 
   if (!user && !isPublicRoute) {
+    if (pathname.startsWith('/api/')) {
+      const response = NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      supabaseResponse.cookies.getAll().forEach(cookie => response.cookies.set(cookie))
+      return response
+    }
     const url = request.nextUrl.clone()
     url.pathname = '/login'
-    return NextResponse.redirect(url)
+    const response = NextResponse.redirect(url)
+    supabaseResponse.cookies.getAll().forEach(cookie => response.cookies.set(cookie))
+    return response
   }
 
   return supabaseResponse

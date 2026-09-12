@@ -16,6 +16,7 @@ type Member = {
 
 type Expense = {
   id: string
+  paidById: string
   title: string
   amount: number
   splitType: string
@@ -50,15 +51,7 @@ export default function ExpenseActions({
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
 
-  // Only show actions if current user paid for this expense
-  if (expense.splits.find(s => s.userId === currentUserId) === undefined) return null
-  const isPayer = expense.splits[0]?.userId === currentUserId ||
-    members.find(m => m.userId === currentUserId) !== undefined
-
-  if (expense.splits.length > 0) {
-    const payerCheck = currentUserId
-    if (!payerCheck) return null
-  }
+  if (expense.paidById !== currentUserId) return null
 
   const totalPercentage = Object.values(percentages)
     .reduce((sum, p) => sum + (parseFloat(p) || 0), 0)
@@ -72,13 +65,16 @@ export default function ExpenseActions({
 
   async function handleEdit() {
     setError(null)
+    const financialChanged = Number(amount) !== expense.amount || splitType !== expense.splitType ||
+      (splitType === 'percentage' && expense.splits.some(split => Number(percentages[split.userId]) !== (split.percentage ?? 0))) ||
+      (splitType === 'amount' && expense.splits.some(split => Number(amounts[split.userId]) !== Number(split.amount.toFixed(2))))
     if (!title.trim() || !amount) { setError('Please fill in all fields'); return }
-    if (splitType === 'percentage' && Math.abs(totalPercentage - 100) > 0.01) {
+    if (financialChanged && splitType === 'percentage' && Math.abs(totalPercentage - 100) > 0.01) {
       setError(`Percentages must add up to 100% (currently ${totalPercentage}%)`)
       return
     }
 
-    if (splitType === 'amount' && Math.abs(totalAmounts - parseFloat(amount)) > 0.01) {
+    if (financialChanged && splitType === 'amount' && Math.abs(totalAmounts - parseFloat(amount)) > 0.01) {
       setError(`Amounts must add up to $${parseFloat(amount).toFixed(2)} (currently $${totalAmounts.toFixed(2)})`)
       return
     }
@@ -98,7 +94,7 @@ export default function ExpenseActions({
     const res = await fetch(`/api/expenses/${expense.id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, amount, splitType, splits })
+      body: JSON.stringify(financialChanged ? { title, amount, splitType, splits } : { title })
     })
 
     if (!res.ok) {
@@ -125,12 +121,14 @@ export default function ExpenseActions({
     <>
       <div className="flex items-center gap-1">
         <button
+          aria-label="Edit expense"
           onClick={() => setEditOpen(true)}
           className="p-1 text-gray-400 hover:text-blue-500 transition-colors"
         >
           <Pencil size={14} />
         </button>
         <button
+          aria-label="Delete expense"
           onClick={() => setDeleteOpen(true)}
           className="p-1 text-gray-400 hover:text-red-500 transition-colors"
         >
@@ -236,7 +234,7 @@ export default function ExpenseActions({
           </DialogHeader>
           <div className="space-y-4 mt-2">
             <p className="text-sm text-gray-600">
-              Are you sure you want to delete <span className="font-medium">"{expense.title}"</span>? This will remove all splits and cannot be undone.
+              Are you sure you want to delete <span className="font-medium">&quot;{expense.title}&quot;</span>? This will remove all splits and cannot be undone.
             </p>
             <div className="flex gap-3">
               <Button

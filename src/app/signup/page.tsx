@@ -16,6 +16,7 @@ export default function SignUpPage() {
   const [name, setName] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [message, setMessage] = useState<string | null>(null)
   const router = useRouter()
 
   async function handleSignUp(e: React.FormEvent) {
@@ -23,10 +24,11 @@ export default function SignUpPage() {
     setLoading(true)
     setError(null)
     const supabase = createClient()
-    const { error } = await supabase.auth.signUp({
+    setMessage(null)
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { full_name: name } }
+      options: { data: { full_name: name }, emailRedirectTo: `${window.location.origin}/auth/callback` }
     })
 
     if (error) {
@@ -35,18 +37,25 @@ export default function SignUpPage() {
       return
     }
 
+    if (!data.session) {
+      setMessage('Check your email to confirm your account before signing in.')
+      setLoading(false)
+      return
+    }
     router.push('/dashboard')
     router.refresh()
   }
 
   async function handleGoogleLogin() {
     const supabase = createClient()
-    await supabase.auth.signInWithOAuth({
+    setError(null)
+    const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
         redirectTo: `${window.location.origin}/auth/callback`
       }
     })
+    if (error) setError(error.message)
   }
 
   return (
@@ -112,6 +121,7 @@ export default function SignUpPage() {
               />
             </div>
 
+            {message && <p role="status" className="text-sm text-green-700">{message}</p>}
             {error && (
               <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
                 {error}

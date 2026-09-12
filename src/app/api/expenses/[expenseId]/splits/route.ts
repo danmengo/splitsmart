@@ -15,9 +15,13 @@ export async function PATCH(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { expenseId } = await params;
-  const { userId, paid } = await request.json();
+  const body = await request.json().catch(() => null);
+  if (!body || typeof body.userId !== 'string' || typeof body.paid !== 'boolean') {
+    return NextResponse.json({ error: 'Provide a user and a boolean paid status' }, { status: 400 });
+  }
+  const { userId, paid } = body;
 
-  // Only allow marking your own split as paid, unless you're the group admin
+  // Only allow marking your own split as paid.
   if (userId !== user.id) {
     return NextResponse.json(
       { error: "You can only mark your own split as paid" },
@@ -26,9 +30,10 @@ export async function PATCH(
   }
 
   const split = await prisma.expenseSplit.updateMany({
-    where: { expenseId, userId },
+    where: { expenseId, userId, expense: { group: { members: { some: { userId: user.id } } } } },
     data: { paid },
   });
 
+  if (!split.count) return NextResponse.json({ error: 'Split not found' }, { status: 404 });
   return NextResponse.json(split);
 }

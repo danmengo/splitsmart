@@ -42,7 +42,7 @@ export default async function NotificationsPage() {
               <Bell size={36} className="mx-auto text-gray-300 mb-3" />
               <p className="text-gray-500 font-medium">No notifications yet</p>
               <p className="text-gray-400 text-sm mt-1">
-                You'll be notified when expenses are added to your groups
+                You&apos;ll be notified when expenses are added to your groups
               </p>
             </div>
           ) : (

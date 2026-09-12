@@ -34,14 +34,14 @@ export async function GET() {
     const totalIOweInGroup = myExpenseSplits
       .filter(s => {
         const expense = group.expenses.find(e => e.id === s.expenseId)
-        return expense?.paidById !== user.id
+        return !s.paid && expense?.paidById !== user.id
       })
       .reduce((sum, s) => sum + s.amount, 0)
 
     const totalOwedToMeInGroup = group.expenses
       .filter(e => e.paidById === user.id)
       .flatMap(e => e.splits)
-      .filter(s => s.userId !== user.id)
+      .filter(s => !s.paid && s.userId !== user.id)
       .reduce((sum, s) => sum + s.amount, 0)
 
     totalIOwe += totalIOweInGroup
