@@ -22,9 +22,9 @@ export default async function NotificationsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
+          <h1 className="text-3xl font-semibold tracking-tight text-teal-950">Notifications</h1>
           <p className="text-gray-500 mt-1">
             {unreadCount > 0 ? `${unreadCount} unread` : 'All caught up!'}
           </p>
@@ -41,7 +41,7 @@ export default async function NotificationsPage() {
             <div className="text-center py-12">
               <Bell size={36} className="mx-auto text-gray-300 mb-3" />
               <p className="text-gray-500 font-medium">No notifications yet</p>
-              <p className="text-gray-400 text-sm mt-1">
+              <p className="text-slate-500 text-sm mt-1">
                 You&apos;ll be notified when expenses are added to your groups
               </p>
             </div>
@@ -61,7 +61,7 @@ export default async function NotificationsPage() {
                     <p className={`text-sm ${!notification.read ? 'font-medium text-gray-900' : 'text-gray-600'}`}>
                       {notification.message}
                     </p>
-                    <p className="text-xs text-gray-400 mt-0.5">
+                    <p className="text-xs text-slate-500 mt-0.5">
                       {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
                     </p>
                   </div>

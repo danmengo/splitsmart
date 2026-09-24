@@ -16,13 +16,13 @@ export default function SpendingChart({ data = [] }: Props) {
   }
 
   return (
-    <ResponsiveContainer width="100%" height={200}>
+    <ResponsiveContainer width="100%" height={260}>
       <BarChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
         <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#6b7280' }} axisLine={false} tickLine={false} />
         <YAxis tick={{ fontSize: 12, fill: '#6b7280' }} axisLine={false} tickLine={false} tickFormatter={v => `$${v}`} />
         <Tooltip formatter={(value) => `$${Number(value).toFixed(2)}`} contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb' }} />
-        <Bar dataKey="total" fill="#22c55e" radius={[4, 4, 0, 0]} />
+        <Bar dataKey="total" fill="#115e59" radius={[7, 7, 0, 0]} maxBarSize={48} />
       </BarChart>
     </ResponsiveContainer>
   )

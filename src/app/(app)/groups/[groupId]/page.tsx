@@ -67,14 +67,14 @@ export default async function GroupDetailPage({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">{group.name}</h1>
+          <h1 className="text-3xl font-semibold tracking-tight text-teal-950">{group.name}</h1>
           {group.description && (
             <p className="text-gray-500 mt-1">{group.description}</p>
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {isAdmin && <InviteMemberButton groupId={group.id} />}
           <SettleUpButton
             groupId={group.id}
@@ -130,11 +130,11 @@ export default async function GroupDetailPage({
             </CardHeader>
             <CardContent className="space-y-3">
               {balances.map(({ user: memberUser, balance }) => (
-                <div key={memberUser.id} className="flex items-center justify-between">
+                <div key={memberUser.id} className="flex flex-wrap items-center justify-between gap-3">
                   <span className="text-sm text-gray-700 truncate">
                     {memberUser.name ?? memberUser.email}
                   </span>
-                  <span className={`text-sm font-semibold ${balance > 0 ? 'text-green-600' : balance < 0 ? 'text-red-500' : 'text-gray-400'
+                  <span className={`text-sm font-semibold ${balance > 0 ? 'text-green-600' : balance < 0 ? 'text-red-500' : 'text-slate-500'
                     }`}>
                     {balance > 0
                       ? `+$${balance.toFixed(2)}`
@@ -158,7 +158,7 @@ export default async function GroupDetailPage({
               {group.expenses.length === 0 ? (
                 <div className="text-center py-8">
                   <p className="text-gray-500 font-medium">No expenses yet</p>
-                  <p className="text-gray-400 text-sm mt-1">Add your first expense above</p>
+                  <p className="text-slate-500 text-sm mt-1">Add your first expense above</p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -167,7 +167,7 @@ export default async function GroupDetailPage({
                     const isPayer = expense.paidById === user.id
                     return (
                       <div key={expense.id} className="p-3 bg-gray-50 rounded-lg space-y-2">
-                        <div className="flex items-center justify-between">
+                        <div className="flex flex-wrap items-center justify-between gap-3">
                           <div>
                             <p className="text-sm font-medium text-gray-900">{expense.title}</p>
                             <p className="text-xs text-gray-500 mt-0.5">
@@ -194,11 +194,11 @@ export default async function GroupDetailPage({
                         {/* Splits breakdown */}
                         <div className="border-t border-gray-200 pt-2 space-y-1">
                           {expense.splits.map(split => (
-                            <div key={split.id} className="flex items-center justify-between">
+                            <div key={split.id} className="flex flex-wrap items-center justify-between gap-3">
                               <span className="text-xs text-gray-500">
                                 {split.user.name ?? split.user.email}
                               </span>
-                              <div className="flex items-center gap-2">
+                              <div className="flex flex-wrap items-center gap-2">
                                 <span className="text-xs text-gray-600">${split.amount.toFixed(2)}</span>
                                 {split.userId === user.id && !isPayer && (
                                   <MarkSplitPaid

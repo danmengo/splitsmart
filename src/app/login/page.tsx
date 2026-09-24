@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import Link from 'next/link'
+import AuthShell from '@/components/AuthShell'
 
 export const dynamic = 'force-dynamic'
 
@@ -47,30 +48,8 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex">
-      {/* Left panel — branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-green-600 text-white flex-col justify-between p-12">
-        <div>
-          <Link href="/" className="text-2xl font-bold">SplitSmart</Link>
-        </div>
-        <div>
-          <h2 className="text-4xl font-bold leading-tight mb-4">
-            Split expenses,<br />not friendships.
-          </h2>
-          <p className="text-green-100 text-lg leading-relaxed max-w-md">
-            Track shared costs with your group, see who owes what, and settle up — all in one place.
-          </p>
-        </div>
-      </div>
-
-      {/* Right panel — form */}
-      <div className="flex-1 flex items-center justify-center p-8 bg-gray-50">
-        <div className="w-full max-w-sm">
-          <div className="lg:hidden mb-8">
-            <Link href="/" className="text-xl font-bold text-green-600">SplitSmart</Link>
-          </div>
-
-          <h1 className="text-2xl font-bold text-gray-900">Welcome back</h1>
+    <AuthShell>
+          <h1 className="text-3xl font-semibold tracking-tight text-teal-950">Welcome back</h1>
           <p className="text-gray-500 mt-1 mb-8">Sign in to your account</p>
 
           <form onSubmit={handleLogin} className="space-y-4">
@@ -103,7 +82,7 @@ export default function LoginPage() {
               </div>
             )}
 
-            <Button type="submit" className="w-full bg-green-600 hover:bg-green-700" disabled={loading}>
+            <Button type="submit" className="w-full bg-primary hover:bg-primary/90" disabled={loading}>
               {loading ? 'Signing in...' : 'Sign in'}
             </Button>
           </form>
@@ -113,7 +92,7 @@ export default function LoginPage() {
               <span className="w-full border-t border-gray-200" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-gray-50 px-2 text-gray-400">or</span>
+              <span className="bg-background px-2 text-gray-400">or</span>
             </div>
           </div>
 
@@ -133,10 +112,8 @@ export default function LoginPage() {
 
           <p className="text-sm text-gray-500 mt-6 text-center">
             Don&apos;t have an account?{' '}
-            <Link href="/signup" className="text-green-600 font-medium hover:underline">Sign up</Link>
+            <Link href="/signup" className="text-teal-800 font-medium hover:underline">Sign up</Link>
           </p>
-        </div>
-      </div>
-    </div>
+    </AuthShell>
   )
 }
